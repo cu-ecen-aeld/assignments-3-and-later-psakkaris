@@ -1,5 +1,11 @@
 #include "systemcalls.h"
 
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 /**
  * @param cmd the command to execute with system()
  * @return true if the command in @param cmd was executed
@@ -17,6 +23,10 @@ bool do_system(const char *cmd)
  *   or false() if it returned a failure
 */
 
+    int resp = system(cmd);
+    if (resp == -1) {
+        return false;
+    }
     return true;
 }
 
@@ -61,6 +71,25 @@ bool do_exec(int count, ...)
 
     va_end(args);
 
+        int status;
+        pid_t pid;
+
+        pid = fork ();
+        if (pid == -1)
+                return -1;
+        else if (pid == 0) {
+                execv(command[0], command+1);
+
+                exit (-1);
+        }
+
+        if (waitpid (pid, &status, 0) == -1)
+                return -1;
+        else if (WIFEXITED (status))
+                return WEXITSTATUS (status);
+
+        return -1;
+
     return true;
 }
 
@@ -95,5 +124,25 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
     va_end(args);
 
-    return true;
+    int kidpid;
+    int fd = open("redirected.txt", O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    if (fd < 0) { perror("open"); abort(); }
+    switch (kidpid = fork()) {
+    case -1: 
+        perror("fork"); 
+        return false;
+    case 0:
+        if (dup2(fd, 1) < 0) { 
+            perror("dup2"); 
+            abort(); 
+            return false;
+        }
+        close(fd);
+        bool resp = do_exec(count, args);
+        return resp;
+    default:
+        close(fd);
+        /* do whatever the parent wants to do. */
+        return false;
+    }   
 }
