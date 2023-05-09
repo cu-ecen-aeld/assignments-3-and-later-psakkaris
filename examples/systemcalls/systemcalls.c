@@ -68,29 +68,27 @@ bool do_exec(int count, ...)
  *   as second argument to the execv() command.
  *
 */
-
-    va_end(args);
-
+        va_end(args);
         int status;
         pid_t pid;
 
         pid = fork ();
         if (pid == -1)
-                return -1;
+                perror("fork");
         else if (pid == 0) {
-                execv(command[0], command+1);
-
-                exit (-1);
+            execv(command[0], command);
+            exit(-1);
         }
 
         if (waitpid (pid, &status, 0) == -1)
-                return -1;
+                perror("wait");
         else if (WIFEXITED (status))
-                return WEXITSTATUS (status);
-
-        return -1;
-
-    return true;
+                WEXITSTATUS (status);
+        
+        if (status != 0) {
+            return false;
+        }
+        return true;
 }
 
 /**
@@ -124,8 +122,9 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
     va_end(args);
 
-    int kidpid;
-    int fd = open("redirected.txt", O_WRONLY|O_TRUNC|O_CREAT, 0644);
+    pid_t kidpid;
+    int status;
+    int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
     if (fd < 0) { perror("open"); abort(); }
     switch (kidpid = fork()) {
     case -1: 
@@ -138,11 +137,19 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
             return false;
         }
         close(fd);
-        bool resp = do_exec(count, args);
-        return resp;
+        execv(command[0], command);
+        exit(-1);
     default:
         close(fd);
         /* do whatever the parent wants to do. */
-        return false;
+        if (waitpid (kidpid, &status, 0) == -1)
+                perror("wait");
+        else if (WIFEXITED (status))
+                WEXITSTATUS (status);
+        
+        if (status != 0) {
+            return false;
+        }
+        return true;
     }   
 }
