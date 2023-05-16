@@ -7,7 +7,7 @@ set -u
 
 OUTDIR=/tmp/aeld
 KERNEL_REPO=git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-KERNEL_VERSION=v5.10.179
+KERNEL_VERSION=v5.15.110
 BUSYBOX_VERSION=1_33_1
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
@@ -38,7 +38,7 @@ if [ ! -e ${OUTDIR}/linux-stable/arch/${ARCH}/boot/Image ]; then
 
     # TODO: Add your kernel build steps here
     # DONE
-    make ARCH=${ARCH} defconfig
+    yes "" | make ARCH=${ARCH} oldconfig
     make -j6 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
 fi
 
@@ -129,4 +129,4 @@ sudo chown -R root:root *
 # TODO: Create initramfs.cpio.gz
 # Done
 find . | cpio -H newc -ov --owner root:root > ../initramfs.cpio
-gzip ../initramfs.cpio
+gzip -f ../initramfs.cpio
