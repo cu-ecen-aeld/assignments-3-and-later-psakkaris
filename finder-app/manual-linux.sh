@@ -116,7 +116,7 @@ ls -l dev
 #ls -l sys
 
 # TODO: Clean and build the writer utility
-cd ${HOME}/code/assignment-1-psakkaris/finder-app/
+cd ${FINDER_APP_DIR}
 make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} clean
 make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
 
