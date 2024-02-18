@@ -1,6 +1,6 @@
 #!/bin/bash
 # Script outline to install and build kernel.
-# Author: Siddhant Jajoo.
+# Author: Perry
 
 set -e
 set -u
@@ -111,13 +111,13 @@ make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
-cp writer ${OUTDIR}/rootfs
-cp finder-test.sh ${OUTDIR}/rootfs
-cp finder.sh ${OUTDIR}/rootfs
-cp autorun-qemu.sh ${OUTDIR}/rootfs
-cd ${OUTDIR}/rootfs
-mkdir conf
-echo "tuxuser" > conf/username.txt
+cp writer ${OUTDIR}/rootfs/home
+cp finder-test.sh ${OUTDIR}/rootfs/home
+cp finder.sh ${OUTDIR}/rootfs/home
+cp autorun-qemu.sh ${OUTDIR}/rootfs/home
+cd ${OUTDIR}/rootfs/home
+mkdir -p conf
+echo "psakkaris" > conf/username.txt
 echo "assignment3" > conf/assignment.txt
 
 # TODO: Chown the root directory
