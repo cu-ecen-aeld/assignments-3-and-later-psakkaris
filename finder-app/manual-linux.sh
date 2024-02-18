@@ -11,6 +11,7 @@ KERNEL_VERSION=v5.15.110
 BUSYBOX_VERSION=1_33_1
 FINDER_APP_DIR=$(realpath $(dirname $0))
 ARCH=arm64
+# gcc-arm-10.2-2020.11-x86_64-aarch64-none-linux-gnu
 TOOLCHAIN_HOME="${HOME}/gcc-arm-10.2-2020.11-x86_64-aarch64-none-linux-gnu/aarch64-none-linux-gnu"
 # cross compile toolchain installed in $HOME dir
 CROSS_COMPILE=aarch64-none-linux-gnu-
@@ -85,10 +86,21 @@ ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
 # DONE
-cp ${TOOLCHAIN_HOME}/libc/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
-cp ${TOOLCHAIN_HOME}/libc/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
-cp ${TOOLCHAIN_HOME}/libc/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
-cp ${TOOLCHAIN_HOME}/libc/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
+if test -f ${TOOLCHAIN_HOME}/libc/lib/ld-linux-aarch64.so.1; then
+  cp ${TOOLCHAIN_HOME}/libc/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
+fi
+
+if test -f ${TOOLCHAIN_HOME}/libc/lib64/libm.so.6; then
+  cp ${TOOLCHAIN_HOME}/libc/lib64/libm.so.6 ${OUTDIR}/rootfs/lib
+fi
+
+if test -f ${TOOLCHAIN_HOME}/libc/lib64/libc.so.6; then
+  cp ${TOOLCHAIN_HOME}/libc/lib64/libc.so.6 ${OUTDIR}/rootfs/lib
+fi
+
+if test -f ${TOOLCHAIN_HOME}/libc/lib64/libresolv.so.2; then
+  cp ${TOOLCHAIN_HOME}/libc/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib
+fi
 
 
 # TODO: Make device nodes
