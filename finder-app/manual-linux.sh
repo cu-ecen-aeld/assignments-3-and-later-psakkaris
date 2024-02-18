@@ -117,7 +117,7 @@ ls -l dev
 
 # TODO: Clean and build the writer utility
 cd ${FINDER_APP_DIR}
-make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} clean
+# make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} clean
 make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
 
 
