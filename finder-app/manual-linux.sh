@@ -60,6 +60,7 @@ cd rootfs
 mkdir -p bin dev etc home lib lib64 proc sbin sys tmp usr var
 mkdir -p mkdir usr/bin usr/lib usr/sbin
 mkdir -p var/log
+mkdir -p home/conf
 
 cd "$OUTDIR"
 if [ ! -d "${OUTDIR}/busybox" ]
@@ -77,7 +78,7 @@ fi
 # DONE
 echo "Building busybox..."
 make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
-make -j6 ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install CONFIG_PREFIX=${OUTDIR}/rootfs
+make -j6 CONFIG_PREFIX=${OUTDIR}/rootfs ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE} install
 
 
 echo "Library dependencies"
@@ -86,21 +87,11 @@ ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
 # DONE
-if test -f ${TOOLCHAIN_HOME}/libc/lib/ld-linux-aarch64.so.1; then
-  cp ${TOOLCHAIN_HOME}/libc/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
-fi
-
-if test -f ${TOOLCHAIN_HOME}/libc/lib64/libm.so.6; then
-  cp ${TOOLCHAIN_HOME}/libc/lib64/libm.so.6 ${OUTDIR}/rootfs/lib
-fi
-
-if test -f ${TOOLCHAIN_HOME}/libc/lib64/libc.so.6; then
-  cp ${TOOLCHAIN_HOME}/libc/lib64/libc.so.6 ${OUTDIR}/rootfs/lib
-fi
-
-if test -f ${TOOLCHAIN_HOME}/libc/lib64/libresolv.so.2; then
-  cp ${TOOLCHAIN_HOME}/libc/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib
-fi
+CROSS_LIB_DIR=$(${CROSS_COMPILE}gcc -print-sysroot)
+cp ${CROSS_LIB_DIR}/lib/ld-linux-aarch64.so.1 ${OUTDIR}/rootfs/lib
+cp ${CROSS_LIB_DIR}/lib64/libm.so.6 ${OUTDIR}/rootfs/lib64
+cp ${CROSS_LIB_DIR}/lib64/libc.so.6 ${OUTDIR}/rootfs/lib64
+cp ${CROSS_LIB_DIR}/lib64/libresolv.so.2 ${OUTDIR}/rootfs/lib64
 
 
 # TODO: Make device nodes
@@ -123,21 +114,16 @@ make ARCH=${ARCH} CROSS_COMPILE=${CROSS_COMPILE}
 
 # TODO: Copy the finder related scripts and executables to the /home directory
 # on the target rootfs
-cp writer ${OUTDIR}/rootfs/home
-cp finder-test.sh ${OUTDIR}/rootfs/home
-cp finder.sh ${OUTDIR}/rootfs/home
-cp autorun-qemu.sh ${OUTDIR}/rootfs/home
-cp writer ${OUTDIR}/rootfs
-cp finder-test.sh ${OUTDIR}/rootfs
-cp finder.sh ${OUTDIR}/rootfs
-cp autorun-qemu.sh ${OUTDIR}/rootfs
-cd ${OUTDIR}/rootfs/home
-mkdir -p conf
-echo "psakkaris" > conf/username.txt
-echo "assignment3" > conf/assignment.txt
+cp ${FINDER_APP_DIR}/conf/* ${OUTDIR}/rootfs/home/conf
+cp ${FINDER_APP_DIR}/writer ${OUTDIR}/rootfs/home
+cp ${FINDER_APP_DIR}/finder-test.sh ${OUTDIR}/rootfs/home
+cp ${FINDER_APP_DIR}/finder.sh ${OUTDIR}/rootfs/home
+cp ${FINDER_APP_DIR}/autorun-qemu.sh ${OUTDIR}/rootfs/home
+
 
 # TODO: Chown the root directory
 # Done
+cd ${OUTDIR}/rootfs
 sudo chown -R root:root *
 
 # TODO: Create initramfs.cpio.gz
